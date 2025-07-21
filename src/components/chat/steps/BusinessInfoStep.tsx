@@ -22,6 +22,7 @@ import {
   Hash,
 } from "lucide-react";
 import {useAppStore} from "@/lib/store";
+import {FixedBottomLayout} from "@/components/ui/fixed-bottom-layout";
 
 export function BusinessInfoStep() {
   const {businessInfo, currentStep, updateBusinessInfo, addMessage, nextStep} =
@@ -292,8 +293,48 @@ export function BusinessInfoStep() {
     },
   ];
 
-  return (
-    <div className='space-y-4'>
+  const bottomContent = (
+    <>
+      {/* 编辑模式的操作按钮 */}
+      {isEditing ? (
+        <div className='flex gap-2'>
+          <Button
+            onClick={handleSave}
+            size='sm'
+            className='flex items-center gap-1'>
+            <Check className='w-3 h-3' />
+            保存修改
+          </Button>
+          <Button
+            onClick={handleCancel}
+            size='sm'
+            variant='outline'>
+            取消
+          </Button>
+        </div>
+      ) : (
+        <>
+          <Button
+            onClick={handleConfirm}
+            size='lg'
+            className='w-full flex items-center justify-center gap-2'>
+            <Check className='w-4 h-4' />
+            确认信息，生成内容序列
+            <ArrowRight className='w-4 h-4' />
+          </Button>
+
+          {/* 操作提示 */}
+          <div className='text-xs text-gray-500 bg-gray-50 p-3 rounded-lg mt-3'>
+            💡
+            请确认AI提取的信息是否准确。如需修改请点击&ldquo;编辑&rdquo;按钮，确认无误后点击&ldquo;确认信息&rdquo;进入下一步。
+          </div>
+        </>
+      )}
+    </>
+  );
+
+  const mainContent = (
+    <>
       <div className='flex items-center justify-between mb-4'>
         <div className='flex items-center gap-2'>
           <Badge variant='secondary'>已提取</Badge>
@@ -365,42 +406,12 @@ export function BusinessInfoStep() {
           );
         })}
       </div>
+    </>
+  );
 
-      {/* 编辑模式的操作按钮 */}
-      {isEditing ? (
-        <div className='flex gap-2 pt-4'>
-          <Button
-            onClick={handleSave}
-            size='sm'
-            className='flex items-center gap-1'>
-            <Check className='w-3 h-3' />
-            保存修改
-          </Button>
-          <Button
-            onClick={handleCancel}
-            size='sm'
-            variant='outline'>
-            取消
-          </Button>
-        </div>
-      ) : (
-        <Button
-          onClick={handleConfirm}
-          size='lg'
-          className='w-full flex items-center justify-center gap-2 mt-6'>
-          <Check className='w-4 h-4' />
-          确认信息，生成内容序列
-          <ArrowRight className='w-4 h-4' />
-        </Button>
-      )}
-
-      {/* 操作提示 */}
-      {!isEditing && (
-        <div className='text-xs text-gray-500 bg-gray-50 p-3 rounded-lg'>
-          💡
-          请确认AI提取的信息是否准确。如需修改请点击&ldquo;编辑&rdquo;按钮，确认无误后点击&ldquo;确认信息&rdquo;进入下一步。
-        </div>
-      )}
-    </div>
+  return (
+    <FixedBottomLayout bottomContent={bottomContent}>
+      {mainContent}
+    </FixedBottomLayout>
   );
 }

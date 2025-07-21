@@ -531,67 +531,16 @@ AI大模型大家都用过了，ChatGPT、文心一言、通义千问，但真�
 // 用户分层选项
 export const userSegmentOptions: SegmentOption[] = [
   {
-    id: "new",
+    id: "new_user",
     name: "新客户跟进",
     description: "为所有新加入企业微信的客户创建标准跟进流程",
-    segments: [
-      {
-        id: "new-users",
-        name: "新加企微客户",
-        type: "new",
-        criteria: "新添加企业微信好友",
-        color: "#3B82F6",
-        tag: "新客户",
-      },
-    ],
+    type: "new_user",
   },
   {
-    id: "manual",
-    name: "手动标签",
-    description: "系统创建标签，需要一线人员判断后手动打标",
-    segments: [
-      {
-        id: "potential",
-        name: "意向客户",
-        type: "manual",
-        criteria: "通过人工沟通后，判断是否有购买意向",
-        color: "#F97316",
-        tag: "潜在客户",
-      },
-      {
-        id: "offline",
-        name: "线下到店咨询",
-        type: "manual",
-        criteria: "线下到店咨询客户",
-        color: "#EF4444",
-        tag: "线下咨询",
-      },
-    ],
-  },
-  {
-    id: "auto",
-    name: "自动标签",
-    description: "根据系统可自动判定的条件为用户打标签",
-    segments: [
-      {
-        id: "active-users",
-        name: "活跃互动",
-        type: "auto",
-        criteria: "近7天有主动发送消息",
-        requirements: ["开通会话存档"],
-        color: "#10B981",
-        tag: "活跃用户",
-      },
-      {
-        id: "order-users",
-        name: "已购客户",
-        type: "auto",
-        criteria: "已完成订单",
-        requirements: ["订单系统对接"],
-        color: "#06B6D4",
-        tag: "已购客户",
-      },
-    ],
+    id: "specific_condition",
+    name: "特定条件用户",
+    description: "为满足特定条件的用户创建跟进流程",
+    type: "specific_condition",
   },
 ];
 

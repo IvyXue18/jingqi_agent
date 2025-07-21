@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import {useAppStore} from "@/lib/store";
 import {ContentSequence} from "@/lib/store";
-import {mockContentGeneration} from "@/lib/mock-data";
+import {FixedBottomLayout} from "@/components/ui/fixed-bottom-layout";
 
 export function ContentGenerationStep() {
   const {
@@ -24,10 +24,7 @@ export function ContentGenerationStep() {
     currentStep,
     openArtifact,
     isLoading,
-    setContentSequences,
-    setLoading,
     nextStep,
-    selectedScenario,
     addMessage,
   } = useAppStore();
 
@@ -69,8 +66,9 @@ export function ContentGenerationStep() {
     return text.substring(0, maxLength) + "...";
   };
 
-  // 继续生成内容
   const handleContinueGenerate = async () => {
+    const {selectedScenario, setContentSequences, setLoading} =
+      useAppStore.getState();
     if (!selectedScenario) return;
 
     setLoading(true);
@@ -81,6 +79,7 @@ export function ContentGenerationStep() {
     });
 
     try {
+      const {mockContentGeneration} = await import("@/lib/mock-data");
       const newContent = await mockContentGeneration(selectedScenario.id);
 
       // 调整新内容的天数，接续现有内容
@@ -115,8 +114,7 @@ export function ContentGenerationStep() {
     }
   };
 
-  // 确认内容并进入下一步
-  const handleConfirmContent = () => {
+  const handleConfirm = () => {
     addMessage({
       type: "assistant",
       content: `✅ 内容序列已确认！\n\n📊 最终配置：\n• 内容数量：${
@@ -132,8 +130,8 @@ export function ContentGenerationStep() {
     }, 500);
   };
 
-  return (
-    <div className='space-y-4'>
+  const mainContent = (
+    <>
       <div className='text-center mb-6'>
         <h3 className='text-lg font-semibold text-gray-900 mb-2'>
           内容序列生成完成
@@ -225,39 +223,43 @@ export function ContentGenerationStep() {
         ))}
       </div>
 
-      {/* 底部操作区 */}
-      <div className='mt-6 space-y-4'>
-        {/* 统计信息 */}
-        <div className='p-4 bg-blue-50 rounded-lg'>
-          <div className='flex items-center justify-between text-sm'>
-            <div className='text-blue-700'>
-              📊 总计 {contentSequences.length} 条内容序列
-            </div>
-            <div className='text-blue-600'>
-              📅 覆盖 {Math.max(...contentSequences.map((c) => c.days))} 天
-            </div>
+      {/* 统计信息 */}
+      <div className='mt-6 p-4 bg-blue-50 rounded-lg'>
+        <div className='flex items-center justify-between text-sm'>
+          <div className='text-blue-700'>
+            📊 总计 {contentSequences.length} 条内容序列
+          </div>
+          <div className='text-blue-600'>
+            📅 覆盖 {Math.max(...contentSequences.map((c) => c.days))} 天
           </div>
         </div>
-
-        {/* 操作按钮 */}
-        <div className='flex items-center justify-between gap-4'>
-          <Button
-            variant='outline'
-            onClick={handleContinueGenerate}
-            disabled={isLoading}
-            className='flex-1'>
-            <Plus className='w-4 h-4 mr-2' />
-            继续生成内容
-          </Button>
-          <Button
-            onClick={handleConfirmContent}
-            disabled={isLoading}
-            className='flex-1'>
-            <CheckCircle className='w-4 h-4 mr-2' />
-            确认内容，下一步
-          </Button>
-        </div>
       </div>
+    </>
+  );
+
+  const bottomContent = (
+    <div className='flex items-center justify-between gap-4'>
+      <Button
+        variant='outline'
+        onClick={handleContinueGenerate}
+        disabled={isLoading}
+        className='flex-1'>
+        <Plus className='w-4 h-4 mr-2' />
+        继续生成内容
+      </Button>
+      <Button
+        onClick={handleConfirm}
+        disabled={isLoading}
+        className='flex-1'>
+        <CheckCircle className='w-4 h-4 mr-2' />
+        确认内容，下一步
+      </Button>
     </div>
+  );
+
+  return (
+    <FixedBottomLayout bottomContent={bottomContent}>
+      {mainContent}
+    </FixedBottomLayout>
   );
 }

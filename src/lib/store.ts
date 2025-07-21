@@ -50,11 +50,13 @@ export interface ContentSequence {
 export interface UserSegment {
   id: string; // 分层ID
   name: string; // 分层名称
-  type: "new" | "auto" | "manual"; // 分层类型：新客户/自动标签/手动标签
-  criteria: string; // 分层条件
+  type: "new_user" | "specific_condition"; // 分层类型：新客户/特定条件
+  criteria?: string; // 分层条件（特定条件时使用）
+  isAutoCondition?: boolean; // 是否可以自动判定（特定条件时使用）
   requirements?: string[]; // 额外配置要求（如开通会话存档等）
   color: string; // 显示颜色
   tag: string; // 标签名称
+  taskId?: string; // 关联的任务ID（用于跳转）
 }
 
 // 分层选项类型定义
@@ -62,7 +64,7 @@ export interface SegmentOption {
   id: string; // 选项ID
   name: string; // 选项名称
   description: string; // 选项描述
-  segments: UserSegment[]; // 包含的分层
+  type: "new_user" | "specific_condition"; // 选项类型
 }
 
 // 应用状态接口

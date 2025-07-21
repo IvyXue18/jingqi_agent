@@ -231,14 +231,17 @@ export function ChatInterface() {
   };
 
   return (
-    <div className='w-full px-4'>
+    <div className='w-full px-4 py-4 space-y-4'>
       {/* 步骤指示器 */}
       <StepIndicator />
 
-      <div className='grid grid-cols-1 lg:grid-cols-10 gap-4 h-[85vh]'>
+      {/* 主内容区域 */}
+      <div className='grid grid-cols-1 lg:grid-cols-10 gap-4'>
         {/* 聊天区域 */}
         <div className='lg:col-span-6'>
-          <Card className='h-full flex flex-col bg-white shadow-lg'>
+          <Card
+            className='flex flex-col bg-white shadow-lg'
+            style={{height: "var(--content-height)"}}>
             {/* 聊天标题 */}
             <div className='p-4 border-b bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-t-lg flex-shrink-0'>
               <div className='flex items-center gap-2'>
@@ -262,7 +265,7 @@ export function ChatInterface() {
               </div>
             </div>
 
-            {/* 消息列表 */}
+            {/* 消息列表 - 可滚动区域 */}
             <div className='flex-1 overflow-y-auto p-4 space-y-4 min-h-0'>
               <MessageList messages={messages} />
               <div ref={messagesEndRef} />
@@ -324,7 +327,9 @@ export function ChatInterface() {
 
         {/* 步骤内容区域 */}
         <div className='lg:col-span-4'>
-          <Card className='h-full flex flex-col bg-white shadow-lg'>
+          <Card
+            className='flex flex-col bg-white shadow-lg'
+            style={{height: "var(--content-height)"}}>
             {/* 固定标题区域 */}
             <div className='p-4 border-b bg-gray-50 flex-shrink-0'>
               <h3 className='font-semibold text-gray-900'>
@@ -335,7 +340,7 @@ export function ChatInterface() {
               </h3>
             </div>
             {/* 可滚动内容区域 */}
-            <div className='flex-1 overflow-y-auto p-4'>
+            <div className='flex-1 overflow-y-auto p-4 min-h-0'>
               {renderStepContent()}
             </div>
           </Card>

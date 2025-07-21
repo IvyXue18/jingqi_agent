@@ -4,6 +4,7 @@ import {useState} from "react";
 import {Card} from "@/components/ui/card";
 import {Badge} from "@/components/ui/badge";
 import {Button} from "@/components/ui/button";
+import {Input} from "@/components/ui/input";
 import {
   Users,
   CheckCircle,
@@ -12,20 +13,22 @@ import {
   AlertTriangle,
   Bot,
   UserPlus,
-  Cog,
-  HandIcon,
+  ChevronRight,
+  Edit3,
 } from "lucide-react";
 import {cn} from "@/lib/utils";
 import {useAppStore} from "@/lib/store";
 import {userSegmentOptions} from "@/lib/mock-data";
+import {UserSegment} from "@/lib/store";
 
 export function UserSegmentStep() {
   const {userSegments, setUserSegments, currentStep, addMessage} =
     useAppStore();
 
-  const [selectedOptions, setSelectedOptions] = useState<string[]>(
-    userSegments.length > 0 ? userSegments.map((seg) => seg.type) : [],
-  );
+  const [selectedOption, setSelectedOption] = useState<string | null>(null);
+  const [conditionInput, setConditionInput] = useState("");
+  const [tagName, setTagName] = useState("");
+  const [isEditing, setIsEditing] = useState(false);
 
   if (currentStep < 4) {
     return (
@@ -35,73 +38,199 @@ export function UserSegmentStep() {
     );
   }
 
+  interface AutoConditionResult {
+    canAutomate: boolean; // 是否可以自动化
+    reason?: string; // 不能自动化的原因
+    requirements?: string[]; // 需要的配置
+    suggestedTag?: string; // 建议的标签名
+  }
+
+  const automatableConditions = {
+    // 行为类
+    behavior: {
+      keywords: [
+        "查看",
+        "浏览",
+        "点击",
+        "访问",
+        "收藏",
+        "加购",
+        "下单",
+        "购买",
+        "支付",
+        "登录",
+        "注册",
+      ],
+      requirements: (matched) => {
+        if (matched.includes("购买")) return ["订单系统对接"];
+        if (matched.includes("查看")) return ["配置查看商品事件"];
+        return [];
+      },
+    },
+    // 互动类
+    interaction: {
+      keywords: ["发消息", "互动", "回复", "咨询", "提问"],
+      requirements: () => ["开通会话存档"],
+    },
+    // 时间类
+    time: {
+      keywords: ["加入", "注册", "关注", "首次", "最后"],
+      requirements: () => [],
+    },
+  };
+
+  const checkAutoCondition = (condition: string): AutoConditionResult => {
+    const lowerCaseCondition = condition.toLowerCase();
+    let canAutomate = false;
+    let reason: string | undefined;
+    let requirements: string[] = [];
+    let suggestedTag: string | undefined;
+
+    // 检查是否包含具体数值
+    const numberMatch = lowerCaseCondition.match(/(\d+)\s*(\w+)/);
+    if (!numberMatch) {
+      reason = "条件中必须包含具体数值，例如：'3次'、'5次'、'10天'等。";
+      return {canAutomate: false, reason};
+    }
+
+    const quantity = parseInt(numberMatch[1], 10);
+    const unit = numberMatch[2];
+
+    // 检查是否包含可自动化的行为/状态关键词
+    for (const category in automatableConditions) {
+      const categoryData =
+        automatableConditions[category as keyof typeof automatableConditions];
+      if (
+        categoryData.keywords.some((keyword) =>
+          lowerCaseCondition.includes(keyword),
+        )
+      ) {
+        canAutomate = true;
+        if (category === "behavior") {
+          const matchedKeywords = categoryData.keywords.filter((keyword) =>
+            lowerCaseCondition.includes(keyword),
+          );
+          if (
+            matchedKeywords.includes("购买") ||
+            matchedKeywords.includes("查看")
+          ) {
+            requirements = categoryData.requirements(matchedKeywords);
+          }
+        } else if (category === "interaction") {
+          requirements = categoryData.requirements();
+        }
+        break;
+      }
+    }
+
+    if (!canAutomate) {
+      reason =
+        "条件中必须包含可自动化的行为或状态关键词，例如：'查看'、'浏览'、'发消息'、'互动'、'下单'、'支付'、'登录'、'注册'等。";
+      return {canAutomate: false, reason};
+    }
+
+    // 如果可以自动化，尝试生成建议的标签名
+    if (condition.includes("用户")) {
+      suggestedTag = `${condition
+        .slice(0, condition.indexOf("用户"))
+        .trim()}用户`;
+    } else {
+      suggestedTag = `${condition.slice(0, 10).trim()}用户`;
+    }
+
+    return {canAutomate, requirements, suggestedTag};
+  };
+
+  // 获取自动化所需配置
+  const getRequirements = (condition: string): string[] => {
+    const requirements: string[] = [];
+    if (condition.includes("消息") || condition.includes("互动")) {
+      requirements.push("开通会话存档");
+    }
+    if (condition.includes("订单") || condition.includes("购买")) {
+      requirements.push("订单系统对接");
+    }
+    if (condition.includes("查看") || condition.includes("浏览")) {
+      requirements.push("配置查看商品事件");
+    }
+    return requirements;
+  };
+
   const handleSelectOption = (optionId: string) => {
-    const option = userSegmentOptions.find((opt) => opt.id === optionId);
-    if (!option) return;
+    setSelectedOption(optionId);
+    setConditionInput("");
+    setTagName("");
+    setIsEditing(false);
 
-    // 更新选中状态
-    const newSelected = selectedOptions.includes(optionId)
-      ? selectedOptions.filter((id) => id !== optionId)
-      : [...selectedOptions, optionId];
-    setSelectedOptions(newSelected);
+    if (optionId === "new_user") {
+      // 创建新客户SOP
+      const newSegment: UserSegment = {
+        id: "new-user-sop",
+        name: "新客户SOP",
+        type: "new_user",
+        color: "#3B82F6",
+        tag: "新客户",
+        taskId: "task-" + Date.now(), // 生成任务ID
+      };
 
-    // 更新分层设置
-    const selectedSegments = userSegmentOptions
-      .filter((opt) => newSelected.includes(opt.id))
-      .flatMap((opt) => opt.segments);
-    setUserSegments(selectedSegments);
-
-    // 添加确认消息
-    if (newSelected.length > selectedOptions.length) {
+      setUserSegments([newSegment]);
       addMessage({
         type: "assistant",
-        content: `✅ 已添加「${option.name}」分层策略！\n\n${
-          option.id === "new"
-            ? "系统将自动为所有新添加的企业微信好友创建跟进SOP。"
-            : option.id === "auto"
-            ? "系统将根据设定的条件自动为用户打标签。注意：部分功能可能需要额外配置。"
-            : "已创建标签组，您可以根据实际情况手动为用户打标签。"
-        }`,
+        content: `✅ 已创建新客户SOP！\n\n系统将自动为所有新添加的企业微信好友创建跟进流程。\n\n您可以点击下方的"查看任务"按钮，查看完整的跟进配置。`,
         step: 4,
       });
     }
-
-    // 如果是最后一个分层被选中，添加完成消息
-    if (newSelected.length === 1 && selectedOptions.length === 0) {
-      setTimeout(() => {
-        addMessage({
-          type: "assistant",
-          content: `🎉 **恭喜！您的私域运营策略已创建完成：**\n\n📋 **配置总结**：\n• 业务场景：已选择\n• 业务信息：已分析提取\n• 内容序列：已生成 ${4} 个\n• 用户分层：${
-            selectedSegments.length
-          } 个分层\n\n🚀 **下一步建议**：\n• 预览并调整内容模板\n• 设置发送时间和频率\n• 配置自动化触发条件\n• 开始执行运营策略\n\n感谢使用私域运营智能助手！`,
-          step: 4,
-        });
-      }, 500);
-    }
   };
 
-  const getOptionIcon = (optionId: string) => {
-    switch (optionId) {
-      case "new":
-        return <UserPlus className='w-5 h-5 text-blue-600' />;
-      case "auto":
-        return <Bot className='w-5 h-5 text-purple-600' />;
-      case "manual":
-        return <HandIcon className='w-5 h-5 text-orange-600' />;
-      default:
-        return <Tag className='w-5 h-5 text-gray-600' />;
-    }
+  const handleSubmitCondition = () => {
+    if (!conditionInput.trim()) return;
+
+    const isAuto = checkAutoCondition(conditionInput);
+    const requirements = isAuto ? getRequirements(conditionInput) : [];
+    const defaultTag = tagName.trim() || `${conditionInput.slice(0, 10)}用户`;
+
+    const newSegment: UserSegment = {
+      id: "condition-" + Date.now(),
+      name: isAuto ? "自动条件" : "手动条件",
+      type: "specific_condition",
+      criteria: conditionInput,
+      isAutoCondition: isAuto,
+      requirements,
+      color: isAuto ? "#10B981" : "#F97316",
+      tag: defaultTag,
+      taskId: "task-" + Date.now(), // 生成任务ID
+    };
+
+    setUserSegments([newSegment]);
+    setIsEditing(false);
+
+    addMessage({
+      type: "assistant",
+      content: isAuto
+        ? `✅ 已创建自动条件分层！\n\n系统将根据以下条件自动为用户打标签：\n• 条件：${conditionInput}\n• 标签：${defaultTag}\n\n⚠️ 注意：需要配置以下功能才能启用自动判定：\n${requirements
+            .map((r) => "• " + r)
+            .join(
+              "\n",
+            )}\n\n您可以点击下方的"查看任务"按钮，查看完整的跟进配置。`
+        : `✅ 已创建手动标签！\n\n由于条件"${conditionInput}"需要人工判断，系统已创建标签"${defaultTag}"。\n\n您需要手动为符合条件的用户打上此标签，系统将自动执行对应的跟进流程。\n\n您可以点击下方的"查看任务"按钮，查看完整的跟进配置。`,
+      step: 4,
+    });
+  };
+
+  const handleViewTask = (taskId: string) => {
+    // TODO: 实现任务跳转逻辑
+    console.log("跳转到任务:", taskId);
   };
 
   return (
     <div className='space-y-4'>
       <div className='text-sm text-gray-600 mb-4'>
-        👥 <strong>用户分层</strong>：选择合适的用户分层策略
+        👥 <strong>用户分层</strong>：选择目标用户群体
       </div>
 
       <div className='space-y-3'>
         {userSegmentOptions.map((option) => {
-          const isSelected = selectedOptions.includes(option.id);
+          const isSelected = selectedOption === option.id;
 
           return (
             <Card
@@ -119,7 +248,11 @@ export function UserSegmentStep() {
                 <div className='flex items-center justify-between'>
                   <div className='flex items-center gap-3'>
                     <div className='w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center'>
-                      {getOptionIcon(option.id)}
+                      {option.id === "new_user" ? (
+                        <UserPlus className='w-5 h-5 text-blue-600' />
+                      ) : (
+                        <Tag className='w-5 h-5 text-orange-600' />
+                      )}
                     </div>
                     <div>
                       <h3 className='font-medium text-gray-900'>
@@ -130,59 +263,69 @@ export function UserSegmentStep() {
                       </p>
                     </div>
                   </div>
-                  {isSelected && (
-                    <Badge
-                      variant='default'
-                      className='bg-green-500'>
-                      <CheckCircle className='w-3 h-3 mr-1' />
-                      已选择
-                    </Badge>
-                  )}
                 </div>
 
-                {/* 分层预览 */}
-                <div className='grid grid-cols-1 gap-2'>
-                  {option.segments.map((segment) => (
-                    <div
-                      key={segment.id}
-                      className='flex items-start gap-3 p-3 bg-white rounded border'>
-                      <div
-                        className='w-2 h-2 rounded-full flex-shrink-0 mt-2'
-                        style={{backgroundColor: segment.color}}
+                {/* 特定条件输入 */}
+                {isSelected && option.id === "specific_condition" && (
+                  <div className='space-y-3 pt-2'>
+                    <div className='space-y-2'>
+                      <label className='text-sm text-gray-700'>
+                        请描述用户需要满足的条件：
+                      </label>
+                      <Input
+                        value={conditionInput}
+                        onChange={(e) => setConditionInput(e.target.value)}
+                        placeholder='例如：已做过产品演示的高意向用户'
+                        className='w-full'
                       />
-                      <div className='flex-1 min-w-0'>
-                        <div className='flex items-center gap-2'>
-                          <span className='text-sm font-medium text-gray-900'>
-                            {segment.name}
-                          </span>
-                          <Badge
-                            variant='outline'
-                            className='text-xs'>
-                            {segment.tag}
-                          </Badge>
-                        </div>
-                        <div className='text-xs text-gray-600 mt-1'>
-                          {segment.criteria}
-                        </div>
-                        {segment.requirements &&
-                          segment.requirements.length > 0 && (
-                            <div className='flex items-center gap-1 mt-2 text-xs text-amber-600'>
-                              <AlertTriangle className='w-3 h-3' />
-                              <span>
-                                需要配置：{segment.requirements.join("、")}
-                              </span>
-                            </div>
-                          )}
-                      </div>
                     </div>
-                  ))}
-                </div>
-
-                {/* 配置提示 */}
-                {isSelected && option.id === "auto" && (
-                  <div className='flex items-center gap-2 mt-2 p-2 bg-amber-50 rounded text-xs text-amber-700'>
-                    <Settings className='w-3 h-3' />
-                    <span>部分功能需要额外配置，可以随时切换到手动打标签</span>
+                    {conditionInput && !isEditing && (
+                      <div className='space-y-2'>
+                        <div className='flex items-center justify-between'>
+                          <span className='text-sm text-gray-700'>
+                            将创建标签：
+                            {tagName || `${conditionInput.slice(0, 10)}用户`}
+                          </span>
+                          <Button
+                            variant='ghost'
+                            size='sm'
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setIsEditing(true);
+                            }}>
+                            <Edit3 className='w-3 h-3 mr-1' />
+                            修改
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                    {isEditing && (
+                      <div className='space-y-2'>
+                        <label className='text-sm text-gray-700'>
+                          自定义标签名称：
+                        </label>
+                        <Input
+                          value={tagName}
+                          onChange={(e) => setTagName(e.target.value)}
+                          placeholder='输入标签名称'
+                          className='w-full'
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                      </div>
+                    )}
+                    <Button
+                      className='w-full'
+                      disabled={!conditionInput.trim()}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (isEditing) {
+                          setIsEditing(false);
+                        } else {
+                          handleSubmitCondition();
+                        }
+                      }}>
+                      {isEditing ? "确认标签" : "创建分层"}
+                    </Button>
                   </div>
                 )}
               </div>
@@ -191,50 +334,76 @@ export function UserSegmentStep() {
         })}
       </div>
 
-      {/* 已配置的分层统计 */}
+      {/* 已配置的分层展示 */}
       {userSegments.length > 0 && (
         <Card className='p-4 bg-green-50 border-green-200'>
           <div className='flex items-center gap-2 mb-3'>
-            <Cog className='w-4 h-4 text-green-600' />
+            <CheckCircle className='w-4 h-4 text-green-600' />
             <span className='font-medium text-green-900'>配置完成</span>
           </div>
 
-          <div className='space-y-2'>
-            <div className='text-sm text-green-800 mb-2'>
-              已配置 {userSegments.length} 个用户分层：
-            </div>
-
-            {/* 分层类型统计 */}
-            <div className='space-y-1'>
-              {["new", "auto", "manual"].map((type) => {
-                const count = userSegments.filter(
-                  (seg) => seg.type === type,
-                ).length;
-                if (count === 0) return null;
-                return (
-                  <div
-                    key={type}
-                    className='flex items-center gap-2'>
-                    <div className='w-2 h-2 rounded-full bg-green-600' />
-                    <span className='text-sm text-green-800'>
-                      {type === "new"
-                        ? "新客户SOP"
-                        : type === "auto"
-                        ? "自动标签"
-                        : "手动标签"}
-                      : {count} 个
-                    </span>
+          <div className='space-y-3'>
+            {userSegments.map((segment) => (
+              <div
+                key={segment.id}
+                className='bg-white rounded-lg p-3 border border-green-100'>
+                <div className='flex items-start justify-between'>
+                  <div className='space-y-1'>
+                    <div className='flex items-center gap-2'>
+                      <div
+                        className='w-2 h-2 rounded-full'
+                        style={{backgroundColor: segment.color}}
+                      />
+                      <span className='font-medium text-gray-900'>
+                        {segment.type === "new_user"
+                          ? "新客户SOP"
+                          : "特定条件跟进"}
+                      </span>
+                    </div>
+                    {segment.type === "specific_condition" && (
+                      <>
+                        <div className='text-sm text-gray-600'>
+                          条件：{segment.criteria}
+                        </div>
+                        <div className='flex items-center gap-2'>
+                          <Badge variant='outline'>{segment.tag}</Badge>
+                          {segment.isAutoCondition ? (
+                            <Badge
+                              variant='default'
+                              className='bg-emerald-500'>
+                              <Bot className='w-3 h-3 mr-1' />
+                              自动判定
+                            </Badge>
+                          ) : (
+                            <Badge
+                              variant='default'
+                              className='bg-orange-500'>
+                              手动打标签
+                            </Badge>
+                          )}
+                        </div>
+                        {segment.requirements &&
+                          segment.requirements.length > 0 && (
+                            <div className='flex items-center gap-1 mt-1 text-xs text-amber-600'>
+                              <AlertTriangle className='w-3 h-3' />
+                              <span>
+                                需要配置：{segment.requirements.join("、")}
+                              </span>
+                            </div>
+                          )}
+                      </>
+                    )}
                   </div>
-                );
-              })}
-            </div>
-
-            <div className='mt-3 pt-3 border-t border-green-200'>
-              <div className='flex items-center gap-1 text-sm text-green-700'>
-                <CheckCircle className='w-4 h-4' />
-                分层配置完成，可以开始执行运营计划！
+                  <Button
+                    variant='ghost'
+                    size='sm'
+                    onClick={() => handleViewTask(segment.taskId!)}>
+                    查看任务
+                    <ChevronRight className='w-4 h-4 ml-1' />
+                  </Button>
+                </div>
               </div>
-            </div>
+            ))}
           </div>
         </Card>
       )}
