@@ -61,7 +61,7 @@ export function UserSegmentStep() {
         "登录",
         "注册",
       ],
-      requirements: (matched) => {
+      requirements: (matched: string[]) => {
         if (matched.includes("购买")) return ["订单系统对接"];
         if (matched.includes("查看")) return ["配置查看商品事件"];
         return [];
@@ -117,7 +117,7 @@ export function UserSegmentStep() {
             requirements = categoryData.requirements(matchedKeywords);
           }
         } else if (category === "interaction") {
-          requirements = categoryData.requirements();
+          requirements = categoryData.requirements([]);
         }
         break;
       }
@@ -194,9 +194,9 @@ export function UserSegmentStep() {
       name: isAuto ? "自动条件" : "手动条件",
       type: "specific_condition",
       criteria: conditionInput,
-      isAutoCondition: isAuto,
+      isAutoCondition: isAuto.canAutomate,
       requirements,
-      color: isAuto ? "#10B981" : "#F97316",
+      color: isAuto.canAutomate ? "#10B981" : "#F97316",
       tag: defaultTag,
       taskId: "task-" + Date.now(), // 生成任务ID
     };
@@ -218,8 +218,8 @@ export function UserSegmentStep() {
   };
 
   const handleViewTask = (taskId: string) => {
-    // TODO: 实现任务跳转逻辑
-    console.log("跳转到任务:", taskId);
+    // 使用 Next.js 的路由跳转到任务详情页
+    window.location.href = `/task/${taskId}`;
   };
 
   return (

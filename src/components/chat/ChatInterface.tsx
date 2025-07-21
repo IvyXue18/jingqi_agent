@@ -16,6 +16,13 @@ import {ContentGenerationStep} from "./steps/ContentGenerationStep";
 import {UserSegmentStep} from "./steps/UserSegmentStep";
 import {ArtifactEditor} from "./ArtifactEditor";
 
+const WELCOME_MESSAGE = {
+  type: "assistant" as const,
+  content:
+    "👋 您好！我是您的私域运营智能助手。\n\n我将通过4个简单的步骤，帮您创建专属的用户运营策略：\n\n1️⃣ **选择业务场景** - 告诉我您的业务类型\n2️⃣ **收集业务信息** - 了解您的具体需求\n3️⃣ **生成内容序列** - AI为您创建运营内容\n4️⃣ **配置用户分层** - 精准定位目标用户\n\n让我们开始吧！请先在右侧选择您打算在这个智能体做什么？",
+  step: 1 as const,
+};
+
 export function ChatInterface() {
   const {currentStep, messages, isLoading, addMessage, nextStep, reset} =
     useAppStore();
@@ -23,6 +30,7 @@ export function ChatInterface() {
   const [inputValue, setInputValue] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const isInitializedRef = useRef(false);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({behavior: "smooth"});
@@ -34,13 +42,9 @@ export function ChatInterface() {
 
   // 初始化欢迎消息
   useEffect(() => {
-    if (messages.length === 0) {
-      addMessage({
-        type: "assistant",
-        content:
-          "👋 您好！我是您的私域运营智能助手。\n\n我将通过4个简单的步骤，帮您创建专属的用户运营策略：\n\n1️⃣ **选择业务场景** - 告诉我您的业务类型\n2️⃣ **收集业务信息** - 了解您的具体需求\n3️⃣ **生成内容序列** - AI为您创建运营内容\n4️⃣ **配置用户分层** - 精准定位目标用户\n\n让我们开始吧！请先在右侧选择您打算在这个智能体做什么？",
-        step: 1,
-      });
+    if (!isInitializedRef.current && messages.length === 0) {
+      isInitializedRef.current = true;
+      addMessage(WELCOME_MESSAGE);
     }
   }, [messages.length, addMessage]);
 
@@ -173,16 +177,8 @@ export function ChatInterface() {
   };
 
   const handleReset = () => {
+    isInitializedRef.current = false;
     reset();
-    // 重置后添加欢迎消息
-    setTimeout(() => {
-      addMessage({
-        type: "assistant",
-        content:
-          "👋 您好！我是您的私域运营智能助手。\n\n我将通过4个简单的步骤，帮您创建专属的用户运营策略：\n\n1️⃣ **选择业务场景** - 告诉我您的业务类型\n2️⃣ **收集业务信息** - 了解您的具体需求\n3️⃣ **生成内容序列** - AI为您创建运营内容\n4️⃣ **配置用户分层** - 精准定位目标用户\n\n让我们开始吧！请先在右侧选择您打算在这个智能体做什么？",
-        step: 1,
-      });
-    }, 100);
   };
 
   const handleFileUpload = () => {

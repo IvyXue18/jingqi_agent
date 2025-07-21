@@ -1,36 +1,153 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 鲸奇私域智能体
 
-## Getting Started
+基于 AI 对话的私域运营策略智能助手，通过自然对话方式帮助用户快速创建私域运营方案。
 
-First, run the development server:
+## 🌟 核心功能
+
+### 1. 场景化对话流程
+
+- 四步式引导：场景选择 → 业务分析 → 内容生成 → 用户分层
+- ChatGPT 风格的对话界面
+- 实时进度指示和状态反馈
+
+### 2. 智能信息提取
+
+- 自动分析业务描述，提取关键信息
+- 支持文件上传和内容解析
+- 结构化展示并支持人工修正
+
+### 3. 内容序列生成
+
+- 基于场景的内容模板智能匹配
+- 支持批量生成和继续生成
+- 灵活的编辑和预览功能
+- 支持设置发送时间和覆盖天数
+
+### 4. 智能用户分层
+
+- 新客户 SOP 自动创建
+- 智能条件识别系统
+  - 自动判断条件是否可系统化执行
+  - 智能推荐所需配置要求
+  - 自动生成标签名称建议
+- 手动/自动标签灵活切换
+
+### 5. 任务管理系统
+
+- 任务详情页面
+  - 场景配置、内容序列、用户分层三大模块
+  - 支持实时编辑和保存
+  - 完整的配置预览和修改
+  - 响应式设计适配
+
+## 🚀 快速开始
 
 ```bash
+# 安装依赖
+npm install
+
+# 启动开发服务器
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+
+# 构建生产版本
+npm run build
+
+# 启动静态文件服务
+npx serve out
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+访问 [http://localhost:3000](http://localhost:3000) 查看应用。
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🛠 技术栈
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- **框架**: Next.js 14 (App Router)
+- **类型系统**: TypeScript
+- **状态管理**: Zustand
+- **UI 框架**:
+  - Tailwind CSS
+  - shadcn/ui
+- **开发工具**:
+  - ESLint
+  - Prettier
 
-## Learn More
+## 📦 项目结构
 
-To learn more about Next.js, take a look at the following resources:
+```
+src/
+  ├── app/                # Next.js 应用入口
+  │   ├── page.tsx       # 主页面
+  │   └── task/         # 任务相关页面
+  │       └── [id]/     # 任务详情页面
+  ├── components/         # React 组件
+  │   ├── ui/            # 基础 UI 组件
+  │   └── chat/          # 对话相关组件
+  ├── lib/               # 工具函数和状态管理
+  └── styles/            # 全局样式
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 🔄 工作流程
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1. **场景选择**
 
-## Deploy on Vercel
+   - 预设多个业务场景模板
+   - 单击选择，支持场景预览
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+2. **业务信息收集**
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+   - 支持文本输入和文件上传
+   - 实时分析和结构化展示
+   - 支持人工编辑和确认
+
+3. **内容序列生成**
+
+   - 智能匹配内容模板
+   - 支持批量生成和追加生成
+   - 内容可编辑和预览
+   - 支持设置发送时间
+
+4. **用户分层配置**
+
+   - 新客户 SOP 自动创建
+   - 智能条件识别和建议
+   - 自动/手动标签系统
+   - 完整的任务配置和预览
+
+5. **任务管理**
+   - 查看完整配置信息
+   - 编辑和更新任务内容
+   - 预览最终效果
+
+## ✅ 当前进度
+
+### 已完成功能
+
+- [x] 基础项目架构搭建
+- [x] 四步对话流程框架
+- [x] 场景选择界面
+- [x] 业务信息收集表单
+- [x] 内容序列生成和编辑
+- [x] 用户分层智能识别系统
+- [x] 响应式布局适配
+- [x] 静态部署支持
+- [x] 任务详情页面
+- [x] 任务编辑功能
+
+### 进行中
+
+- [ ] 文件上传功能完善
+- [ ] 内容模板扩充
+- [ ] 用户体验优化
+- [ ] 任务数据持久化
+
+### 待开发
+
+- [ ] 后端服务集成
+- [ ] AI 模型接入
+- [ ] 数据持久化
+- [ ] 多用户支持
+- [ ] 更多场景模板
+- [ ] 数据分析功能
+
+## 📄 许可证
+
+MIT
