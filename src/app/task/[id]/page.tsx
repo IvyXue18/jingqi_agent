@@ -253,22 +253,10 @@ export default function TaskDetailPage({params}: {params: {id: string}}) {
                           <Badge>{segment.tag}</Badge>
                           <Badge
                             variant='outline'
-                            className={
-                              segment.isAutoCondition
-                                ? "text-green-600"
-                                : "text-orange-600"
-                            }>
-                            {segment.isAutoCondition
-                              ? "自动判定"
-                              : "手动打标签"}
+                            className='text-orange-600'>
+                            手动打标签
                           </Badge>
                         </div>
-                        {segment.requirements &&
-                          segment.requirements.length > 0 && (
-                            <div className='text-sm text-amber-600'>
-                              需要配置：{segment.requirements.join("、")}
-                            </div>
-                          )}
                       </>
                     )}
                   </div>
