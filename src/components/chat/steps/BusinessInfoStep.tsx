@@ -44,7 +44,7 @@ export function BusinessInfoStep() {
   if (currentStep < 2) {
     return (
       <div className='text-center text-gray-500 py-8'>
-        <div className='text-sm'>请先完成场景选择</div>
+        <div className='text-sm'>请先完成智能体选择</div>
       </div>
     );
   }
@@ -171,7 +171,7 @@ export function BusinessInfoStep() {
     addMessage({
       type: "assistant",
       content:
-        "🎨 太好了！现在开始为您生成个性化的运营内容序列...\n\n✨ 内容生成中，请稍等片刻...",
+        "🎨 太好了！现在就给你搞一套内容序列\n\n✨ 内容生成中，大概 2-3 分钟，你先去喝杯水吧嘿嘿",
       step: 3,
     });
 
@@ -200,16 +200,16 @@ export function BusinessInfoStep() {
 
         addMsg({
           type: "assistant",
-          content: `🎉 内容序列生成完成！\n\n📝 **已为您生成**：\n${generatedContent
+          content: `🎉 搞定了！\n\n给你整了${
+            generatedContent.length
+          }条能直接用的内容：\n\n${generatedContent
             .map(
               (content, index) =>
-                `${index + 1}. 第${content.days}天 - ${
-                  content.title
-                } (私聊触达)`,
+                `第${index + 1}套 - ${content.title}，${content.description}`,
             )
             .join(
               "\n",
-            )}\n\n您可以在右侧面板中预览和编辑这些内容。如果对内容有任何意见或需要调整，请告诉我！\n\n准备好后，我们进入最后一步：用户分层配置。`,
+            )}\n\n右边面板看看内容，\n哪里不对劲直接改，\n改完咱们就配置用户分层。\n\n你说了算。`,
           step: 3,
         });
       } catch (error) {

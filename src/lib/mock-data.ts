@@ -4,25 +4,25 @@ import {Scenario, ContentSequence, UserSegment, SegmentOption} from "./store";
 export const scenarios: Scenario[] = [
   {
     id: "nurture",
-    title: "培育阶段",
+    title: "培育智能体",
     description: "持续传递产品服务价值，激发用户兴趣与咨询欲望，适当种草",
     icon: "🌱",
   },
   {
     id: "invite",
-    title: "邀约阶段",
+    title: "邀约智能体",
     description: "高频内容种草，邀约用户完成指定动作",
     icon: "🤝",
   },
   {
     id: "launch",
-    title: "发售阶段",
+    title: "发售智能体",
     description: "集中时段营销推广，营造稀缺感与紧迫感",
     icon: "🚀",
   },
   {
     id: "deliver",
-    title: "交付阶段",
+    title: "交付智能体",
     description: "成交后服务交付，提升产品使用价值和交付陪伴感",
     icon: "✨",
   },
@@ -533,13 +533,15 @@ export const userSegmentOptions: SegmentOption[] = [
   {
     id: "new_user",
     name: "新客户跟进",
-    description: "为所有新加入企业微信的客户创建标准跟进流程",
+    description:
+      "所有新加你企微的，统统先过一遍标准流程。什么意思？就是不管谁加你，都先用同一套内容培育筛选，把真客户和凑热闹的分出来。方便执行管理，适合需求筛选阶段。",
     type: "new_user",
   },
   {
     id: "specific_condition",
     name: "特定条件用户",
-    description: "为满足特定条件的用户创建跟进流程",
+    description:
+      "针对特定人群定制专门跟进策略和内容。针对特定人群，定制专门的跟进策略。比如说？付费用户单独一套，免费用户单独一套；A类客户单独一套，B类客户单独一套。用户更细分，切入更精准",
     type: "specific_condition",
   },
 ];

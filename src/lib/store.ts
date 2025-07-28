@@ -52,8 +52,6 @@ export interface UserSegment {
   name: string; // 分层名称
   type: "new_user" | "specific_condition"; // 分层类型：新客户/特定条件
   criteria?: string; // 分层条件（特定条件时使用）
-  isAutoCondition?: boolean; // 是否可以自动判定（特定条件时使用）
-  requirements?: string[]; // 额外配置要求（如开通会话存档等）
   color: string; // 显示颜色
   tag: string; // 标签名称
   taskId?: string; // 关联的任务ID（用于跳转）

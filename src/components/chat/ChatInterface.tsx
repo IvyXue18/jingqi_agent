@@ -19,7 +19,7 @@ import {ArtifactEditor} from "./ArtifactEditor";
 const WELCOME_MESSAGE = {
   type: "assistant" as const,
   content:
-    "👋 您好！我是您的私域运营智能助手。\n\n我将通过4个简单的步骤，帮您创建专属的用户运营策略：\n\n1️⃣ **选择业务场景** - 告诉我您的业务类型\n2️⃣ **收集业务信息** - 了解您的具体需求\n3️⃣ **生成内容序列** - AI为您创建运营内容\n4️⃣ **配置用户分层** - 精准定位目标用户\n\n让我们开始吧！请先在右侧选择您打算在这个智能体做什么？",
+    "嘿，朋友！\n\n客户加了不知道怎么跟进？内容写不出来？用户分不清楚？\n\n别慌，鲸奇是专门来帮你搞定这些事儿。我们 8 年的私域经验和方法论，全部浓缩在这几步了，你10分钟就能搞出一套能用的方案。\n\n关键是，这套东西真的管用。\n为啥？因为我们是用那些做私域做得好的案例和方法论训练出来的，不是瞎编的理论。说起来就是四步走：\n\n第1️⃣步：选哪个智能体，帮你干哪类活儿\n培育？邀约？发售？交付？咱一次解决一个小问题\n第2️⃣步：收集业务情况\n具体聊聊你是做什么买卖的，现在遇到啥问题，客户啥样，想达到啥效果。\n第3️⃣步：AI给你整内容\n我直接给你生成一套能用的运营内容，不用你自己憋了。不是那种花花绿绿的广告，是真正说人话、戳痛点的内容\n第4️⃣步：用户分分类\n你要跟进哪些用户，先安排清楚，后面智能体就兢兢业业给你发内容。\n\n行了废话不多说，你准备先从哪个智能体开始？右边挑一个，咱们开搞！",
   step: 1 as const,
 };
 
@@ -86,7 +86,7 @@ export function ChatInterface() {
       // 添加AI回复
       addMessage({
         type: "assistant",
-        content: `📊 我已经分析了您的业务信息！\n\n✅ **提取结果**：\n• 行业领域：${
+        content: `我给你理了一下，看看啊：\n\n【提取出的业务信息】\n• 行业领域：${
           extractedInfo.industry || "未识别"
         }\n• 产品/服务：${
           extractedInfo.productService || "未填写"
@@ -100,7 +100,7 @@ export function ChatInterface() {
           extractedInfo.expectedAction || "未填写"
         }\n• 内容条数：${extractedInfo.contentCount || "未填写"}\n• 沟通风格：${
           extractedInfo.communicationStyle || "未填写"
-        }\n\n请在右侧面板中详细确认这些信息是否准确。如果需要修改，您可以直接编辑，然后点击"确认信息"按钮进入下一步。`,
+        }\n\n这个方向对不对？\n\n如果没问题，右边确认一下就行。\n有哪里不准确的，直接改改，然后点"确认信息"。`,
         step: 2,
       });
 
@@ -135,7 +135,7 @@ export function ChatInterface() {
     // 添加生成中消息
     addMessage({
       type: "assistant",
-      content: `🎨 正在为「${selectedScenario.title}」场景生成专属内容序列...\n\n✨ 内容生成中，请稍等片刻...`,
+      content: `终于开始了！现在就给你搞一套内容序列。大概3-5分钟吧，你先起身走走喝杯水嘿嘿`,
       step: 3,
     });
 
@@ -148,14 +148,16 @@ export function ChatInterface() {
       // 添加生成完成消息
       addMessage({
         type: "assistant",
-        content: `🎉 内容序列生成完成！\n\n📝 **已为您生成**：\n${generatedContent
+        content: `🎉 搞定了！\n\n给你整了几条内容先看看：\n${generatedContent
           .map(
             (content, index) =>
-              `${index + 1}. 第${content.days}天 - ${content.title} (私聊触达)`,
+              `【${index + 1}】第${content.days}天 - ${
+                content.title
+              } (私聊触达)`,
           )
           .join(
             "\n",
-          )}\n\n您可以在右侧面板中预览和编辑这些内容。如果对内容有任何意见或需要调整，请告诉我！\n\n准备好后，我们进入最后一步：用户分层配置。`,
+          )}\n\n右边面板是具体文案，\n哪里不对劲直接改，也可以再生成几条\n改完咱们就配置用户分层。\n\n你说了算。`,
         step: 3,
       });
     } catch (error) {
@@ -200,7 +202,7 @@ export function ChatInterface() {
       // 这里可以添加实际的文件处理逻辑
       addMessage({
         type: "assistant",
-        content: `收到您上传的文件：${fileNames}\n\n我已经分析了您的文件内容，请继续描述您的业务需求，我会结合文件信息为您生成更精准的运营策略。`,
+        content: `文件收到了：${fileNames}\n\n看了你的资料，有点意思。\n\n但光看文件还不够，你还是得简单交代我几句\n\n你一句话，我给你一套策略。\n\n文件+需求一结合，\n你的运营策略就精准了\n\n简单说几句，咱们开搞？`,
         step: currentStep,
       });
 
@@ -277,9 +279,9 @@ export function ChatInterface() {
                     onKeyPress={handleKeyPress}
                     placeholder={
                       currentStep === 1
-                        ? "请从上方选择业务场景..."
+                        ? "请从右边选择智能体..."
                         : currentStep === 2
-                        ? "请描述您的业务需求..."
+                        ? "请描述您的详细业务情况，包括公司、产品、问题、用户、目标等...，如果有产品服务相关资料，可以点击右边的按钮上传"
                         : currentStep === 3
                         ? "对生成的内容有什么意见吗？"
                         : "您希望如何配置用户分层？"

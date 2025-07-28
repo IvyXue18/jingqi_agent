@@ -117,11 +117,11 @@ export function ContentGenerationStep() {
   const handleConfirm = () => {
     addMessage({
       type: "assistant",
-      content: `✅ 内容序列已确认！\n\n📊 最终配置：\n• 内容数量：${
+      content: `🎉 内容序列搞定了！\n\n📊 最终配置：\n• 内容数量：${
         contentSequences.length
       } 条\n• 覆盖天数：${Math.max(
         ...contentSequences.map((c) => c.days),
-      )} 天\n\n现在让我们进入最后一步：配置用户分层策略。`,
+      )} 天\n\n最后一步最关键：配置用户分层策略。\n\n你知道吗？我们服务了几百家客户，发现一个规律：\n\n转化率高的都在做两件事——\n\n第一种：对所有加过来的用户先培育筛选，把真客户和看热闹的分开。\n\n第二种：对有意向的用户进一步升单转化，把小单变大单，把观望变成交。\n\n不分层的结果是什么？好客户被当普通客户搁置，普通客户被当好客户跟进浪费时间。\n\n分层的结果呢？该培育的培育，该转化的转化，你的效率就上去了，你的转化率就翻倍了。\n\n来，看右边，咱把分层策略也配置了`,
       step: 3,
     });
 
