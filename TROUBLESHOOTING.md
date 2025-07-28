@@ -147,6 +147,84 @@ npm run dev
 
 ---
 
+## 问题 #003: Vercel 部署失败 - TypeScript 编译错误
+
+**日期**: 2024-07-28  
+**严重程度**: 🔴 Critical  
+**症状**:
+
+- 本地开发正常，但 Vercel 部署失败
+- TypeScript 编译错误：Property 'isAutoCondition' does not exist
+- 构建过程中断，无法完成部署
+
+**错误表现**:
+
+```
+Failed to compile.
+./src/app/task/[id]/page.tsx:257:39
+Type error: Property 'isAutoCondition' does not exist on type 'UserSegment'.
+```
+
+**根本原因**:
+在简化用户分层功能时，从`UserSegment`类型中移除了`isAutoCondition`和`requirements`字段，但任务详情页面中仍然在使用这些已删除的属性。
+
+**解决方案**:
+
+### 1. 定位问题文件
+
+```bash
+# 搜索所有使用已删除属性的地方
+grep -r "isAutoCondition" src/
+grep -r "requirements" src/
+```
+
+### 2. 修复任务详情页面
+
+```typescript
+// 修复前
+<Badge
+  variant='outline'
+  className={
+    segment.isAutoCondition ? "text-green-600" : "text-orange-600"
+  }>
+  {segment.isAutoCondition ? "自动判定" : "手动打标签"}
+</Badge>
+
+// 修复后
+<Badge
+  variant='outline'
+  className="text-orange-600">
+  手动打标签
+</Badge>
+```
+
+### 3. 验证构建
+
+```bash
+npm run build
+```
+
+**关键知识点**:
+
+- 修改数据结构时要检查所有使用该结构的地方
+- 本地开发模式不会进行严格的 TypeScript 检查
+- Vercel 部署会进行完整的类型检查和构建验证
+- 使用`git grep`或 IDE 全局搜索来定位所有引用
+
+**相关文档**:
+
+- [Next.js TypeScript Documentation](https://nextjs.org/docs/pages/building-your-application/configuring/typescript)
+- [Vercel Build Process](https://vercel.com/docs/concepts/deployments/build-step)
+
+**预防措施**:
+
+- 修改类型定义后立即运行`npm run build`验证
+- 使用 TypeScript 严格模式进行开发
+- 设置 pre-commit hook 进行构建检查
+- 定期进行全量构建测试
+
+---
+
 **文档维护说明**:
 
 - 每次遇到新问题都要及时记录
