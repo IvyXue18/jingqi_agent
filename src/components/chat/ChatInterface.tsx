@@ -6,7 +6,7 @@ import {Button} from "@/components/ui/button";
 import {Input} from "@/components/ui/input";
 import {Badge} from "@/components/ui/badge";
 import {Progress} from "@/components/ui/progress";
-import {Send, Upload, Bot, User, RotateCcw} from "lucide-react";
+import {Send, Bot, User, RotateCcw} from "lucide-react";
 import {useAppStore} from "@/lib/store";
 import {StepIndicator} from "./StepIndicator";
 import {MessageList} from "./MessageList";
@@ -29,7 +29,6 @@ export function ChatInterface() {
 
   const [inputValue, setInputValue] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const isInitializedRef = useRef(false);
 
   const scrollToBottom = () => {
@@ -75,36 +74,12 @@ export function ChatInterface() {
     } = useAppStore.getState();
 
     if (currentStep === 2) {
-      // 步骤2: 处理业务信息
-      setLoading(true);
-
-      // 模拟AI处理业务信息
-      const {mockBusinessInfoExtraction} = await import("@/lib/mock-data");
-      const extractedInfo = await mockBusinessInfoExtraction(userInput);
-      updateBusinessInfo(extractedInfo);
-
-      // 添加AI回复
+      // 步骤2: 不应该从左侧输入，引导用户到右侧
       addMessage({
         type: "assistant",
-        content: `我给你理了一下，看看啊：\n\n【提取出的业务信息】\n• 行业领域：${
-          extractedInfo.industry || "未识别"
-        }\n• 产品/服务：${
-          extractedInfo.productService || "未填写"
-        }\n• 目标受众：${
-          extractedInfo.targetAudience || "未填写"
-        }\n• 核心优势：${
-          extractedInfo.coreAdvantages || "未填写"
-        }\n• 用户痛点：${
-          extractedInfo.userPainPoints || "未填写"
-        }\n• 期望行动：${
-          extractedInfo.expectedAction || "未填写"
-        }\n• 内容条数：${extractedInfo.contentCount || "未填写"}\n• 沟通风格：${
-          extractedInfo.communicationStyle || "未填写"
-        }\n\n这个方向对不对？\n\n如果没问题，右边确认一下就行。\n有哪里不准确的，直接改改，然后点"确认信息"。`,
+        content: `⚠️ 请在右侧面板中填写业务信息！\n\n右侧有专门的业务描述区域和文件上传功能，填写完成后点击"🚀 开始分析"按钮即可。`,
         step: 2,
       });
-
-      setLoading(false);
     } else if (currentStep === 3) {
       // 步骤3: 如果用户有意见，可以处理内容调整
       addMessage({
@@ -183,36 +158,6 @@ export function ChatInterface() {
     reset();
   };
 
-  const handleFileUpload = () => {
-    fileInputRef.current?.click();
-  };
-
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = event.target.files;
-    if (files && files.length > 0) {
-      const fileNames = Array.from(files)
-        .map((file) => file.name)
-        .join(", ");
-      addMessage({
-        type: "user",
-        content: `📎 已上传文件：${fileNames}`,
-        step: currentStep,
-      });
-
-      // 这里可以添加实际的文件处理逻辑
-      addMessage({
-        type: "assistant",
-        content: `文件收到了：${fileNames}\n\n看了你的资料，有点意思。\n\n但光看文件还不够，你还是得简单交代我几句\n\n你一句话，我给你一套策略。\n\n文件+需求一结合，\n你的运营策略就精准了\n\n简单说几句，咱们开搞？`,
-        step: currentStep,
-      });
-
-      // 清除文件选择
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
-    }
-  };
-
   const renderStepContent = () => {
     switch (currentStep) {
       case 1:
@@ -281,34 +226,16 @@ export function ChatInterface() {
                       currentStep === 1
                         ? "请从右边选择智能体..."
                         : currentStep === 2
-                        ? "请描述您的详细业务情况，包括公司、产品、问题、用户、目标等...，如果有产品服务相关资料，可以点击右边的按钮上传"
+                        ? "请简单描述您的业务（也可以只在右侧上传文件，或两者结合）..."
                         : currentStep === 3
                         ? "对生成的内容有什么意见吗？"
                         : "您希望如何配置用户分层？"
                     }
-                    disabled={isLoading || currentStep === 1}
+                    disabled={
+                      isLoading || currentStep === 1 || currentStep === 2
+                    }
                     className='pr-12'
                   />
-                  {currentStep === 2 && (
-                    <>
-                      <Button
-                        size='sm'
-                        variant='ghost'
-                        onClick={handleFileUpload}
-                        className='absolute right-1 top-1 h-8 w-8 p-0'
-                        title='上传文件'>
-                        <Upload className='w-4 h-4' />
-                      </Button>
-                      <input
-                        ref={fileInputRef}
-                        type='file'
-                        multiple
-                        accept='.pdf,.doc,.docx,.txt,.md'
-                        onChange={handleFileChange}
-                        className='hidden'
-                      />
-                    </>
-                  )}
                 </div>
                 <Button
                   onClick={handleSendMessage}

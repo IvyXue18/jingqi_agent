@@ -218,7 +218,7 @@ npm run build
 
 **预防措施**:
 
-- 修改类型定义后立即运行`npm run build`验证
+- 提交 github 前，需要运行`npm run build`验证
 - 使用 TypeScript 严格模式进行开发
 - 设置 pre-commit hook 进行构建检查
 - 定期进行全量构建测试

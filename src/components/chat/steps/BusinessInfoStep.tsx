@@ -24,6 +24,230 @@ import {
 import {useAppStore} from "@/lib/store";
 import {FixedBottomLayout} from "@/components/ui/fixed-bottom-layout";
 
+// 统一业务信息输入组件
+function UnifiedBusinessInput() {
+  const [businessDescription, setBusinessDescription] = useState("");
+  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const {updateBusinessInfo, addMessage, nextStep} = useAppStore();
+
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(event.target.files || []);
+    setUploadedFiles((prev) => [...prev, ...files]);
+  };
+
+  const removeFile = (index: number) => {
+    setUploadedFiles((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleAnalyze = async () => {
+    if (!businessDescription.trim() && uploadedFiles.length === 0) {
+      return;
+    }
+
+    setIsAnalyzing(true);
+
+    // 模拟AI处理业务信息（结合文字描述和文件内容）
+    const {mockBusinessInfoExtraction} = await import("@/lib/mock-data");
+    let analysisInput = businessDescription;
+
+    // 如果有文件，模拟文件内容提取
+    if (uploadedFiles.length > 0) {
+      const fileNames = uploadedFiles.map((f) => f.name).join("、");
+      analysisInput += `\n\n[已上传文件: ${fileNames}]`;
+      // 在实际应用中，这里会调用文件解析API
+    }
+
+    const extractedInfo = await mockBusinessInfoExtraction(analysisInput);
+    updateBusinessInfo(extractedInfo);
+
+    // 添加AI回复
+    addMessage({
+      type: "assistant",
+      content: `我给你理了一下，看看啊：\n\n【提取出的业务信息】\n• 行业领域：${
+        extractedInfo.industry || "未识别"
+      }\n• 产品/服务：${
+        extractedInfo.productService || "未填写"
+      }\n• 目标受众：${extractedInfo.targetAudience || "未填写"}\n• 核心优势：${
+        extractedInfo.coreAdvantages || "未填写"
+      }\n• 用户痛点：${extractedInfo.userPainPoints || "未填写"}\n• 期望行动：${
+        extractedInfo.expectedAction || "未填写"
+      }\n• 内容条数：${extractedInfo.contentCount || "未填写"}\n• 沟通风格：${
+        extractedInfo.communicationStyle || "未填写"
+      }\n\n这个方向对不对？\n\n如果没问题，右边确认一下就行。\n有哪里不准确的，直接改改，然后点"确认信息"。`,
+      step: 2,
+    });
+
+    setIsAnalyzing(false);
+  };
+
+  return (
+    <div className='space-y-6'>
+      {/* 顶部引导提示 */}
+      <div className='bg-blue-50 border border-blue-200 rounded-lg p-4'>
+        <div className='flex items-center gap-2 mb-2'>
+          <div className='w-2 h-2 bg-blue-500 rounded-full animate-pulse'></div>
+          <h3 className='font-medium text-blue-900'>
+            请在此处填写您的业务信息
+          </h3>
+        </div>
+        <p className='text-sm text-blue-700'>
+          您可以通过文字描述、上传文件或两者结合的方式提供信息
+        </p>
+      </div>
+
+      {/* 统一的业务信息输入组件 */}
+      <div className='border border-gray-200 rounded-lg bg-white'>
+        {/* 文件上传区域 - 放在顶部 */}
+        <div className='p-4 border-b border-gray-100'>
+          <h4 className='font-medium text-gray-900 mb-3 flex items-center gap-2'>
+            📎 业务材料
+            <span className='text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded'>
+              如果有的话就上传，分析更细致
+            </span>
+          </h4>
+          <div className='border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-blue-400 hover:bg-blue-50 transition-all duration-200'>
+            <input
+              type='file'
+              multiple
+              accept='.pdf,.doc,.docx,.txt,.md'
+              onChange={handleFileUpload}
+              className='hidden'
+              id='file-upload'
+            />
+            <label
+              htmlFor='file-upload'
+              className='cursor-pointer block'>
+              <div className='text-gray-500'>
+                <div className='text-xl mb-1'>📄</div>
+                <div className='text-sm'>
+                  <div className='font-medium text-gray-700 mb-1'>
+                    点击上传或拖拽文件至此处
+                  </div>
+                  <div className='text-xs text-gray-500'>
+                    支持：PDF、Word、文本文件
+                  </div>
+                </div>
+              </div>
+            </label>
+          </div>
+
+          {/* 已上传文件列表 */}
+          {uploadedFiles.length > 0 && (
+            <div className='mt-3 space-y-2'>
+              {uploadedFiles.map((file, index) => (
+                <div
+                  key={index}
+                  className='flex items-center justify-between bg-gray-50 p-2 rounded'>
+                  <span className='text-sm text-gray-700'>{file.name}</span>
+                  <Button
+                    variant='ghost'
+                    size='sm'
+                    onClick={() => removeFile(index)}
+                    className='h-6 w-6 p-0'>
+                    ×
+                  </Button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* 文字描述区域 - 中间 */}
+        <div className='p-4'>
+          <h4 className='font-medium text-gray-900 mb-3 flex items-center gap-2'>
+            📝 业务描述
+            <span className='text-xs bg-blue-100 text-blue-600 px-2 py-1 rounded'>
+              必填
+            </span>
+          </h4>
+          <Textarea
+            value={businessDescription}
+            onChange={(e) => setBusinessDescription(e.target.value)}
+            placeholder='请描述您的业务情况，✨ 建议包含：行业类型、产品价格、目标用户、当前挑战、期望目标。如果不知道怎么写，可以参考下面的示例。'
+            className='min-h-[120px] resize-none border-gray-300 focus:border-blue-500 focus:ring-blue-500'
+            rows={5}
+          />
+
+          {/* 参考示例 - 放在文本框下方 */}
+          <div className='mt-4 bg-blue-50 border border-blue-200 rounded-lg p-4'>
+            <h4 className='font-medium text-blue-900 mb-3 flex items-center gap-2'>
+              💡 参考这些描述方式
+            </h4>
+            <div className='space-y-3 text-sm text-blue-800'>
+              <div className='bg-white/60 p-3 rounded-lg border border-blue-200'>
+                <div className='font-medium text-blue-900 mb-1'>
+                  📚 在线教育示例：
+                </div>
+                <div className='text-blue-700 leading-relaxed'>
+                  "我们是做在线教育的，主要卖职场技能课程，从199元的入门课到1999元的VIP服务。现在想对加到企微的新用户进行不硬广的触达，能够达成小客单入门课的成交。"
+                </div>
+              </div>
+
+              <div className='bg-white/60 p-3 rounded-lg border border-blue-200'>
+                <div className='font-medium text-blue-900 mb-1'>
+                  🛒 电商零售示例：
+                </div>
+                <div className='text-blue-700 leading-relaxed'>
+                  "我们是做母婴用品电商的，主要面向25-35岁新手妈妈。现在私域里有5000个宝妈用户，但复购率只有20%，希望通过内容运营提升到40%以上。"
+                </div>
+              </div>
+
+              <div className='bg-white/60 p-3 rounded-lg border border-blue-200'>
+                <div className='font-medium text-blue-900 mb-1'>
+                  💰 金融保险示例：
+                </div>
+                <div className='text-blue-700 leading-relaxed'>
+                  "我们是做理财规划的，目标客户是月收入1-3万的白领。现在有客户资源但转化率低，想通过持续的理财知识分享建立信任，最终推广我们的理财产品。"
+                </div>
+              </div>
+
+              <div className='bg-white/60 p-3 rounded-lg border border-blue-200'>
+                <div className='font-medium text-blue-900 mb-1'>
+                  🏥 医美健康示例：
+                </div>
+                <div className='text-blue-700 leading-relaxed'>
+                  "我们是医美诊所，主要做轻医美项目。目标用户是25-40岁爱美女性，想通过科普内容和案例分享，让用户从了解到信任，最终预约到店体验。"
+                </div>
+              </div>
+
+              <div className='bg-white/60 p-3 rounded-lg border border-blue-200'>
+                <div className='font-medium text-blue-900 mb-1'>
+                  🏠 房产中介示例：
+                </div>
+                <div className='text-blue-700 leading-relaxed'>
+                  "我们是房产中介，主要服务首次购房的年轻人。希望通过购房知识分享和政策解读，建立专业形象，让客户在有购房需求时第一时间想到我们。"
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 固定底部分析按钮 */}
+      <div className='sticky bottom-0 bg-white border-t border-gray-200 p-4 -mx-4 -mb-4'>
+        <Button
+          onClick={handleAnalyze}
+          disabled={
+            (!businessDescription.trim() && uploadedFiles.length === 0) ||
+            isAnalyzing
+          }
+          className='w-full py-3 text-base font-medium bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 shadow-lg hover:shadow-xl transition-all duration-200'
+          size='lg'>
+          {isAnalyzing ? (
+            <>
+              <div className='animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2' />
+              AI分析中...
+            </>
+          ) : (
+            "🚀 开始分析"
+          )}
+        </Button>
+      </div>
+    </div>
+  );
+}
+
 export function BusinessInfoStep() {
   const {businessInfo, currentStep, updateBusinessInfo, addMessage, nextStep} =
     useAppStore();
@@ -49,72 +273,9 @@ export function BusinessInfoStep() {
     );
   }
 
-  // 如果还没有业务信息，显示等待状态
+  // 如果还没有业务信息，显示统一输入界面
   if (Object.keys(businessInfo).length === 0) {
-    return (
-      <div className='space-y-4'>
-        <div className='text-sm text-gray-600 mb-4'>
-          💡 <strong>提示</strong>：请在左侧对话框中输入您的业务信息
-        </div>
-
-        <Card className='p-4 bg-blue-50 border-blue-200'>
-          <h4 className='font-medium text-blue-900 mb-3'>
-            💡 参考这些描述方式：
-          </h4>
-
-          <div className='space-y-3 text-sm text-blue-800'>
-            <div className='bg-white/60 p-3 rounded-lg border border-blue-200'>
-              <div className='font-medium text-blue-900 mb-1'>
-                📚 在线教育示例：
-              </div>
-              <div className='text-blue-700 leading-relaxed'>
-                &ldquo;我们是做在线教育的，主要卖职场技能课程，从199元的入门课到1999元的VIP服务。现在想对加到企微的新用户进行不硬广的触达，能够达成小客单入门课的成交。&rdquo;
-              </div>
-            </div>
-
-            <div className='bg-white/60 p-3 rounded-lg border border-blue-200'>
-              <div className='font-medium text-blue-900 mb-1'>
-                🛒 电商零售示例：
-              </div>
-              <div className='text-blue-700 leading-relaxed'>
-                &ldquo;我们是做母婴用品电商的，主要面向25-35岁新手妈妈。现在私域里有5000个宝妈用户，但复购率只有20%，希望通过内容运营提升到40%以上。&rdquo;
-              </div>
-            </div>
-
-            <div className='bg-white/60 p-3 rounded-lg border border-blue-200'>
-              <div className='font-medium text-blue-900 mb-1'>
-                💰 金融保险示例：
-              </div>
-              <div className='text-blue-700 leading-relaxed'>
-                &ldquo;我们是做理财规划的，目标客户是月收入1-3万的白领。现在有客户资源但转化率低，想通过持续的理财知识分享建立信任，最终推广我们的理财产品。&rdquo;
-              </div>
-            </div>
-
-            <div className='bg-white/60 p-3 rounded-lg border border-blue-200'>
-              <div className='font-medium text-blue-900 mb-1'>
-                🏥 医美健康示例：
-              </div>
-              <div className='text-blue-700 leading-relaxed'>
-                &ldquo;我们是医美诊所，主要做轻医美项目。目标用户是25-40岁爱美女性，想通过科普内容和案例分享，让用户从了解到信任，最终预约到店体验。&rdquo;
-              </div>
-            </div>
-
-            <div className='bg-white/60 p-3 rounded-lg border border-blue-200'>
-              <div className='font-medium text-blue-900 mb-1'>
-                🏠 房产中介示例：
-              </div>
-              <div className='text-blue-700 leading-relaxed'>
-                &ldquo;我们是房产中介，主要服务首次购房的年轻人。希望通过购房知识分享和政策解读，建立专业形象，让客户在有购房需求时第一时间想到我们。&rdquo;
-              </div>
-            </div>
-          </div>
-
-          <div className='mt-4 p-2 bg-blue-100/50 rounded text-xs text-blue-600'>
-            ✨ 建议包含：行业类型、产品价格、目标用户、当前挑战、期望目标
-          </div>
-        </Card>
-      </div>
-    );
+    return <UnifiedBusinessInput />;
   }
 
   const handleEdit = () => {
