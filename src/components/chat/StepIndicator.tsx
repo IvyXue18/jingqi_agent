@@ -6,7 +6,7 @@ import {cn} from "@/lib/utils";
 import {useAppStore} from "@/lib/store";
 
 const steps = [
-  {id: 1, name: "选择场景", icon: "🎯"},
+  {id: 1, name: "选择智能体", icon: "🎯"},
   {id: 2, name: "业务描述", icon: "📝"},
   {id: 3, name: "生成内容", icon: "✨"},
   {id: 4, name: "设置用户", icon: "👥"},

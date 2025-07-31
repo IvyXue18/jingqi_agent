@@ -13,6 +13,7 @@ import {
   ChevronRight,
   Plus,
   CheckCircle,
+  Trash2,
 } from "lucide-react";
 import {useAppStore} from "@/lib/store";
 import {ContentSequence} from "@/lib/store";
@@ -26,6 +27,7 @@ export function ContentGenerationStep() {
     isLoading,
     nextStep,
     addMessage,
+    setContentSequences,
   } = useAppStore();
 
   if (currentStep < 3) {
@@ -59,6 +61,27 @@ export function ContentGenerationStep() {
 
   const handleEditContent = (content: ContentSequence) => {
     openArtifact(content);
+  };
+
+  const handleDeleteContent = (contentId: string) => {
+    const updatedSequences = contentSequences.filter(
+      (content) => content.id !== contentId,
+    );
+
+    // 重新排序剩余内容的天数和order
+    const reorderedSequences = updatedSequences.map((content, index) => ({
+      ...content,
+      days: index + 1,
+      order: index + 1,
+    }));
+
+    setContentSequences(reorderedSequences);
+
+    addMessage({
+      type: "assistant",
+      content: `✅ 已删除该内容！\n\n现在还剩 ${reorderedSequences.length} 条内容。`,
+      step: 3,
+    });
   };
 
   const truncateText = (text: string, maxLength: number = 120) => {
@@ -173,6 +196,17 @@ export function ContentGenerationStep() {
                   </Badge>
                 </div>
               </div>
+              {/* 删除按钮 */}
+              <Button
+                size='sm'
+                variant='ghost'
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleDeleteContent(content.id);
+                }}
+                className='text-red-500 hover:text-red-700 hover:bg-red-50 p-1 h-8 w-8'>
+                <Trash2 className='w-4 h-4' />
+              </Button>
             </div>
 
             {/* 标题和描述 */}

@@ -40,7 +40,7 @@ export function ScenarioSelector() {
     // 添加用户选择消息
     addMessage({
       type: "user",
-      content: `我选择了「${scenario.title}」场景`,
+      content: `我选择了「${scenario.title}」`,
       step: 1,
     });
 
@@ -84,7 +84,7 @@ export function ScenarioSelector() {
   return (
     <div className='space-y-4'>
       <div className='text-sm text-gray-600'>
-        请选择最符合您业务特点的场景类型：
+        请选择最符合您业务特点的智能体类型：
       </div>
 
       <div className='space-y-3'>
